@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 class Game
 {
     private readonly Parser parser;
     private readonly Player player;
+    private Room mapRoom;
+    private string campusMap;
 
     public Game()
     {
@@ -14,15 +18,16 @@ class Game
 
     private void CreateRooms()
     {
-        Room outside = new("outside the main entrance of the university");
-        Room theatre = new("in a lecture theatre");
-        Room pub = new("in the campus pub");
-        Room lab = new("in a computing lab");
-        Room office = new("in the computing admin office");
-        Room kitchen = new("in the pub's kitchen");
-        Room cellar = new("in the pub's cellar");
-        Room backyard = new("in the backyard");
-        Room infirmary = new("in the university infirmary");
+        Room outside = new("Outside", "outside the main entrance of the university");
+        Room theatre = new("Theatre", "in a lecture theatre");
+        Room pub = new("Pub", "in the campus pub");
+        Room lab = new("Lab", "in a computing lab");
+        Room office = new("Office", "in the computing admin office");
+        mapRoom = new("Map Room", "in the campus map room");
+        Room kitchen = new("Kitchen", "in the pub's kitchen");
+        Room cellar = new("Cellar", "in the pub's cellar");
+        Room backyard = new("Backyard", "in the backyard");
+        Room infirmary = new("Infirmary", "in the university infirmary");
 
         outside.AddExit(Direction.East, ExitProvider.Normal(theatre));
         outside.AddExit(Direction.South, ExitProvider.Normal(lab));
@@ -39,6 +44,9 @@ class Game
         lab.AddExit(Direction.South, ExitProvider.Healing(infirmary, 5, 15));
 
         office.AddExit(Direction.West, ExitProvider.Normal(lab));
+        office.AddExit(Direction.East, ExitProvider.Normal(mapRoom));
+
+        mapRoom.AddExit(Direction.West, ExitProvider.Normal(office));
 
         kitchen.AddExit(Direction.Down, ExitProvider.Hazardous(cellar, 1, 10));
         kitchen.AddExit(Direction.North, ExitProvider.Normal(pub));
@@ -51,7 +59,33 @@ class Game
 
         infirmary.AddExit(Direction.North, ExitProvider.Normal(lab));
 
+        Room[] rooms =
+        {
+            outside, theatre, pub, lab, office, mapRoom, kitchen, cellar, backyard, infirmary
+        };
+
+        campusMap = BuildMapDescription(rooms);
+
         player.CurrentRoom = outside;
+    }
+
+    private static string BuildMapDescription(IEnumerable<Room> rooms)
+    {
+        var roomLines = rooms
+            .OrderBy(r => r.Name)
+            .Select(r =>
+            {
+                var exitInfos = r.GetExitInfos().ToList();
+                if (!exitInfos.Any()) return $"{r.Name}: no exits";
+
+                var exitsText = exitInfos
+                    .OrderBy(info => info.direction.ToDirectionString())
+                    .Select(info => $"{info.direction.ToDirectionString()} -> {info.destination.Name}");
+
+                return $"{r.Name}: {string.Join(", ", exitsText)}";
+            });
+
+        return "Campus Map:\n" + string.Join("\n", roomLines);
     }
 
     public void Play()
@@ -86,7 +120,7 @@ class Game
         Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
         Console.WriteLine("Type 'help' if you need help.");
         Console.WriteLine();
-        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+        Console.WriteLine(GetRoomDescription(player.CurrentRoom));
     }
 
     private bool ProcessCommand(Command command)
@@ -109,7 +143,11 @@ class Game
         return false;
     }
 
-    private void Look() => Console.WriteLine(player.CurrentRoom.GetLongDescription());
+    private void Look()
+    {
+        bool showMap = player.CurrentRoom == mapRoom;
+        Console.WriteLine(GetRoomDescription(player.CurrentRoom, showMap));
+    }
 
     private void SeeHealth()
     {
@@ -152,6 +190,18 @@ class Game
 
         exit.Traverse(player);
         player.IncrementMoveCounter();
-        Console.WriteLine(player.CurrentRoom.GetLongDescription());
+        Console.WriteLine(GetRoomDescription(player.CurrentRoom));
+    }
+
+    private string GetRoomDescription(Room room, bool includeMap = false)
+    {
+        var description = room.GetLongDescription();
+
+        if (includeMap && room == mapRoom && !string.IsNullOrEmpty(campusMap))
+        {
+            return $"{description}\n\n{campusMap}";
+        }
+
+        return description;
     }
 }
