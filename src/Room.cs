@@ -1,61 +1,53 @@
 using System.Collections.Generic;
+using System.Linq;
 
 class Room
 {
-    // Private fields
-    private string description;
-    private Dictionary<string, Room> exits; // stores exits of this room.
+    private readonly string description;
+    private readonly Dictionary<Direction, Room> exits = new();
+    private readonly Dictionary<Direction, (int minDamage, int maxDamage)> hazardousExits = new();
 
-    // Create a room described "description". Initially, it has no exits.
-    // "description" is something like "in a kitchen" or "in a court yard".
-    public Room(string desc)
+    public Room(string desc) => description = desc;
+
+    public void AddExit(Direction direction, Room neighbor) => exits[direction] = neighbor;
+
+    public void AddHazardousExit(Direction direction, Room neighbor, int minDamage, int maxDamage)
     {
-        description = desc;
-        exits = new Dictionary<string, Room>();
+        exits[direction] = neighbor;
+        hazardousExits[direction] = (minDamage, maxDamage);
     }
 
-    // Define an exit for this room.
-    public void AddExit(string direction, Room neighbor)
+    public void AddExit(string directionString, Room neighbor)
     {
-        exits.Add(direction, neighbor);
+        var direction = DirectionExtensions.FromString(directionString);
+        if (direction.HasValue) AddExit(direction.Value, neighbor);
     }
 
-    // Return the description of the room.
-    public string GetShortDescription()
+    public void AddHazardousExit(string directionString, Room neighbor, int minDamage, int maxDamage)
     {
-        return description;
+        var direction = DirectionExtensions.FromString(directionString);
+        if (direction.HasValue) AddHazardousExit(direction.Value, neighbor, minDamage, maxDamage);
     }
 
-    // Return a long description of this room, in the form:
-    //     You are in the kitchen.
-    //     Exits: north, west
-    public string GetLongDescription()
+    public bool IsExitHazardous(Direction direction) => hazardousExits.ContainsKey(direction);
+
+    public (int minDamage, int maxDamage) GetExitDamage(Direction direction) =>
+        hazardousExits.TryGetValue(direction, out var damage) ? damage : (0, 0);
+
+    public string GetShortDescription() => description;
+
+    public string GetLongDescription() => $"You are {description}.\n{GetExitString()}";
+
+    public Room GetExit(Direction direction) => exits.TryGetValue(direction, out Room room) ? room : null;
+
+    public Room GetExit(string directionString)
     {
-        string str = "You are ";
-        str += description;
-        str += ".\n";
-        str += GetExitString();
-        return str;
+        var direction = DirectionExtensions.FromString(directionString);
+        return direction.HasValue ? GetExit(direction.Value) : null;
     }
 
-    // Return the room that is reached if we go from this room in direction
-    // "direction". If there is no room in that direction, return null.
-    public Room GetExit(string direction)
-    {
-        if (exits.ContainsKey(direction))
-        {
-            return exits[direction];
-        }
-        return null;
-    }
+    public IEnumerable<Direction> GetAvailableExits() => exits.Keys;
 
-    // Return a string describing the room's exits, for example
-    // "Exits: north, west".
-    private string GetExitString()
-    {
-        string str = "Exits: ";
-        str += String.Join(", ", exits.Keys);
-
-        return str;
-    }
+    private string GetExitString() => !exits.Any() ? "Exits: none"
+        : $"Exits: {string.Join(", ", exits.Keys.Select(d => d.ToDirectionString()))}";
 }

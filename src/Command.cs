@@ -1,27 +1,11 @@
-class Command
+public readonly struct Command
 {
-    public string CommandWord { get; init; }
-    public string SecondWord { get; init; }
+    public CommandType Type { get; init; }
+    public string Parameter { get; init; }
 
-    // Create a command object. First and second word must be supplied, but
-    // either one (or both) can be null. See Parser.GetCommand()
-    public Command(string first, string second)
-    {
-        CommandWord = first;
-        SecondWord = second;
-    }
+    public Command(CommandType type, string parameter = null) => (Type, Parameter) = (type, parameter);
 
-
-    // Return true if this command was not understood.
-    public bool IsUnknown()
-    {
-        return CommandWord == null;
-    }
-
-
-    // Return true if the command has a second word.
-    public bool HasSecondWord()
-    {
-        return SecondWord != null;
-    }
+    public bool IsUnknown() => Type == CommandType.Unknown;
+    public bool HasParameter() => !string.IsNullOrEmpty(Parameter);
+    public bool IsMissingRequiredParameter() => Type.RequiresParameter() && !HasParameter();
 }

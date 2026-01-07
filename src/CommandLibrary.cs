@@ -1,32 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 
 class CommandLibrary
 {
-    // A List that holds all valid command words
-    private readonly List<string> validCommands;
+    private readonly List<CommandType> validCommands = new(CommandTypeExtensions.GetValidCommands());
 
-    // Constructor - initialise the command words.
-    public CommandLibrary()
-    {
-        validCommands = new List<string>();
-
-        validCommands.Add("help");
-        validCommands.Add("go");
-        validCommands.Add("quit");
-        validCommands.Add("look");
-        validCommands.Add("health");
-    }
-
-    // Check whether a given string is a valid command word.
-    // Return true if it is, false if it isn't.
-    public bool IsValidCommandWord(string instring)
-    {
-        return validCommands.Contains(instring);
-    }
-
-    // returns a list of valid command words as a comma separated string.
-    public string GetCommandsString()
-    {
-        return String.Join(", ", validCommands);
-    }
+    public bool IsValidCommand(CommandType type) => type != CommandType.Unknown && validCommands.Contains(type);
+    public List<CommandType> GetCommandTypes() => new(validCommands);
+    public List<string> GetCommandsList() => validCommands.Select(cmd => cmd.ToCommandString()).ToList();
+    public string GetCommandsString() => string.Join(", ", validCommands.Select(cmd => cmd.ToCommandString()));
 }

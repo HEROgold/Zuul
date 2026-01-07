@@ -1,40 +1,55 @@
 using System;
+using System.Collections.Generic;
 
 class Parser
 {
-    // Holds all valid command words
     private readonly CommandLibrary commandLibrary;
+    private readonly MenuSystem menuSystem;
 
-    // Constructor
     public Parser()
     {
         commandLibrary = new CommandLibrary();
+        menuSystem = new MenuSystem(commandLibrary.GetCommandTypes());
     }
 
-    // Ask and interpret the user input. Return a Command object.
-    public Command GetCommand()
+    public Command GetCommand(Room currentRoom = null)
     {
-        Console.Write("> "); // print prompt
+        Console.WriteLine("\nPress any key to open command menu...");
+        Console.ReadKey(true);
 
-        string word1 = null;
-        string word2 = null;
-
-        // string.Split() returns an array
-        string[] words = Console.ReadLine().Split(' ');
-        if (words.Length > 0) { word1 = words[0]; }
-        if (words.Length > 1) { word2 = words[1]; }
-
-        // Now check whether this word is known. If so, create a command with it.
-        if (commandLibrary.IsValidCommandWord(word1))
+        var selectedCommand = menuSystem.GetSelection();
+        if (selectedCommand == CommandType.Unknown)
         {
-            return new Command(word1, word2);
+            Console.WriteLine("Command cancelled.");
+            return new Command(CommandType.Unknown);
         }
 
-        // If not, create a "null" command (for unknown command).
-        return new Command(null, null);
+        string parameter = null;
+        if (selectedCommand.RequiresParameter() && selectedCommand == CommandType.Go)
+        {
+            parameter = GetDirectionFromMenu(currentRoom);
+            if (parameter == null)
+            {
+                Console.WriteLine("Direction selection cancelled.");
+                return new Command(CommandType.Unknown);
+            }
+        }
+
+        return new Command(selectedCommand, parameter);
     }
 
-    // Prints a list of valid command words from commandLibrary.
+    private string GetDirectionFromMenu(Room currentRoom)
+    {
+        if (currentRoom == null)
+        {
+            Console.WriteLine("Error: No current room available.");
+            return null;
+        }
+
+        var directionMenu = new DirectionMenuSystem(currentRoom.GetAvailableExits());
+        return directionMenu.GetSelection()?.ToDirectionString();
+    }
+
     public void PrintValidCommands()
     {
         Console.WriteLine("Your command words are:");

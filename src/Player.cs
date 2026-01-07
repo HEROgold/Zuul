@@ -1,19 +1,30 @@
 class Player
 {
-    private Game game;
-    //fields
-    public int health;
-    // auto property
+    private PlayerStats stats;
+
     public Room CurrentRoom { get; set; }
-    // constructor
-    public Player()
+    public PlayerStats Stats => stats;
+
+    public Player(int initialHealth = 100)
     {
         CurrentRoom = null;
-        health = 100;
+        stats = new PlayerStats(initialHealth);
     }
-    //methods
-    void Heal()
-    {
-        health = 100;
-    }
+
+    public void TakeDamage(int damage) => stats = stats.TakeDamage(damage);
+    public void Heal(int amount) => stats = stats.Heal(amount);
+    public void FullHeal() => stats = stats.FullHeal();
+    public void AddScore(int points) => stats = stats.AddScore(points);
+    public void IncrementMoveCounter() => stats = stats.IncrementMoves();
+
+    public bool IsAlive => stats.IsAlive;
+    public int Health => stats.Health;
+    public int MaxHealth => stats.MaxHealth;
+    public int Score => stats.Score;
+    public int MovesCount => stats.MovesCount;
+
+    public string GetHealthDisplay() => stats.GetHealthBar();
+    public string GetStatusDescription() => stats.GetStatusDescription();
+    public string GetFullStatus() => $"{stats}\n{GetStatusDescription()}";
 }
+
