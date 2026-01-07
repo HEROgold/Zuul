@@ -22,30 +22,34 @@ class Game
         Room kitchen = new("in the pub's kitchen");
         Room cellar = new("in the pub's cellar");
         Room backyard = new("in the backyard");
+        Room infirmary = new("in the university infirmary");
 
-        outside.AddExit("east", theatre);
-        outside.AddExit("south", lab);
-        outside.AddExit("west", pub);
+        outside.AddExit(Direction.East, ExitProvider.Normal(theatre));
+        outside.AddExit(Direction.South, ExitProvider.Normal(lab));
+        outside.AddExit(Direction.West, ExitProvider.Normal(pub));
 
-        theatre.AddExit("west", outside);
-        theatre.AddExit("south", backyard);
+        theatre.AddExit(Direction.West, ExitProvider.Normal(outside));
+        theatre.AddExit(Direction.South, ExitProvider.Normal(backyard));
 
-        pub.AddExit("east", outside);
-        pub.AddExit("south", kitchen);
+        pub.AddExit(Direction.East, ExitProvider.Normal(outside));
+        pub.AddExit(Direction.South, ExitProvider.Normal(kitchen));
 
-        lab.AddExit("north", outside);
-        lab.AddExit("east", office);
+        lab.AddExit(Direction.North, ExitProvider.Normal(outside));
+        lab.AddExit(Direction.East, ExitProvider.Normal(office));
+        lab.AddExit(Direction.South, ExitProvider.Healing(infirmary, 5, 15));
 
-        office.AddExit("west", lab);
+        office.AddExit(Direction.West, ExitProvider.Normal(lab));
 
-        kitchen.AddHazardousExit("down", cellar, 1, 10);
-        kitchen.AddExit("north", pub);
-        kitchen.AddExit("east", backyard);
+        kitchen.AddExit(Direction.Down, ExitProvider.Hazardous(cellar, 1, 10));
+        kitchen.AddExit(Direction.North, ExitProvider.Normal(pub));
+        kitchen.AddExit(Direction.East, ExitProvider.Normal(backyard));
 
-        cellar.AddHazardousExit("up", kitchen, 1, 8);
+        cellar.AddExit(Direction.Up, ExitProvider.Hazardous(kitchen, 1, 8));
 
-        backyard.AddHazardousExit("west", kitchen, 1, 5);
-        backyard.AddExit("north", theatre);
+        backyard.AddExit(Direction.West, ExitProvider.Hazardous(kitchen, 1, 5));
+        backyard.AddExit(Direction.North, ExitProvider.Normal(theatre));
+
+        infirmary.AddExit(Direction.North, ExitProvider.Normal(lab));
 
         player.CurrentRoom = outside;
     }
@@ -139,24 +143,14 @@ class Game
             return;
         }
 
-        Room nextRoom = player.CurrentRoom.GetExit(direction.Value);
-        if (nextRoom == null)
+        Exit exit = player.CurrentRoom.GetExit(direction.Value);
+        if (exit == null)
         {
             Console.WriteLine($"There is no door to {command.Parameter}!");
             return;
         }
 
-        if (player.CurrentRoom.IsExitHazardous(direction.Value))
-        {
-            var (minDamage, maxDamage) = player.CurrentRoom.GetExitDamage(direction.Value);
-            int damage = Random.Shared.Next(minDamage, maxDamage + 1);
-            player.TakeDamage(damage);
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"⚠️  This path is dangerous! You took {damage} damage.");
-            Console.ResetColor();
-        }
-
-        player.CurrentRoom = nextRoom;
+        exit.Traverse(player);
         player.IncrementMoveCounter();
         Console.WriteLine(player.CurrentRoom.GetLongDescription());
     }
