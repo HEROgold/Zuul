@@ -54,8 +54,8 @@ class Game
 		backyard.AddExit("north", theatre);
 
         // Create your Items here
-        Item bandage = new Item(10, "A bandage");
-		Item medkit = new Item(40, "A medkit");
+        Item bandage = new Item(10, "Bandage");
+		Item medkit = new Item(40, "Medkit");
 		// And add them to the Rooms
 		
 
@@ -75,7 +75,7 @@ class Game
 		{
 			Command command = parser.GetCommand();
 			finished = ProcessCommand(command);
-					//checks if health is <=0 then stops
+					//checks if health is ==0 then stops
 			if (player.health == 0)
 			{
 				Console.WriteLine("Game Over");
@@ -119,7 +119,8 @@ class Game
 				break;
 			case "go":
 				GoRoom(command);
-				player.health -=100;
+				player.health -=10;
+				LowHp();
 				break;
 			case "quit":
 				wantToQuit = true;
@@ -129,6 +130,9 @@ class Game
 				break;
 			case "health":
 				SeeHealth();
+				break;
+			case "heal":
+				Heal();
 				break;
 		}
 
@@ -142,15 +146,40 @@ class Game
 	// Print out some help information.
 	// Here we print the mission and a list of the command words.
 	
-	public void Look()
+	private void Look()
 	{
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
 
-	    public void SeeHealth()
+	private void SeeHealth()
     {
-        Console.WriteLine(player.health);
+        Console.WriteLine($"Your health is: {player.health}HP");
     }
+
+	private void Heal()
+	{
+		if (player.health <= 80)
+		{
+			player.health += 20;
+			Console.WriteLine($"You healed! Your health is now: {player.health}HP");
+		}
+		else
+		{
+			Console.WriteLine("You aren't all that injured are you?");
+		}
+	}
+
+	private void LowHp()
+	{
+		if (player.health <= 40 && player.health >= 30)
+		{
+			Console.WriteLine($"U feel hurt.");
+		}
+		else if (player.health <= 20)
+		{
+			Console.WriteLine($"U feel miserable. U should heal!");
+		}
+	}
 
 	private void PrintHelp()
 	{
