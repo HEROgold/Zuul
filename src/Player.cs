@@ -12,8 +12,4 @@ class Player
         health = 100;
     }
     //methods
-    void Heal()
-    {
-        health = 100;
-    }
 }
