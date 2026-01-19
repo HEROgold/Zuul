@@ -7,8 +7,9 @@ class Game
 	private Parser parser;
 	private Player player;
 
-	// Constructor
-	public Game()
+    // Constructor
+	// Makes the player object, parser object and room objects
+    public Game()
 	{
 		parser = new Parser();
 		player = new Player();
@@ -23,7 +24,7 @@ class Game
 		Room theatre = new Room("in a lecture theatre");
 		Room pub = new Room("in the campus pub");
 		Room lab = new Room("in a computing lab");
-		Room office = new Room("in the computing admin office");
+		Room office = new Room("in the computing a{dmin office");
 		Room kitchen = new Room("in the pub's kitchen");
 		Room cellar = new Room("in the pub's cellar");
 		Room backyard = new Room("in the backyard");
@@ -54,10 +55,12 @@ class Game
 		backyard.AddExit("north", theatre);
 
         // Create your Items here
+
+		// Makes a item find more in Item.cs
         Item bandage = new Item(10, "Bandage");
 		Item medkit = new Item(40, "Medkit");
+
 		// And add them to the Rooms
-		
 
 		// Start game outside
 		player.CurrentRoom = outside;
@@ -75,7 +78,8 @@ class Game
 		{
 			Command command = parser.GetCommand();
 			finished = ProcessCommand(command);
-					//checks if health is ==0 then stops
+
+			//checks if health is == 0 then stops
 			if (player.health == 0)
 			{
 				Console.WriteLine("Game Over");
@@ -96,6 +100,7 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
+		// Description info at Room.cs
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
 
@@ -119,7 +124,7 @@ class Game
 				break;
 			case "go":
 				GoRoom(command);
-				player.health -=10;
+				player.Damage();
 				LowHp();
 				break;
 			case "quit":
@@ -132,7 +137,10 @@ class Game
 				SeeHealth();
 				break;
 			case "heal":
-				Heal();
+				player.Heal();
+				break;
+			case "die":
+				player.Sepuccu();
 				break;
 		}
 
@@ -151,36 +159,27 @@ class Game
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
 
+	// Shows the players HP
 	private void SeeHealth()
     {
         Console.WriteLine($"Your health is: {player.health}HP");
     }
 
-	private void Heal()
-	{
-		if (player.health <= 80)
-		{
-			player.health += 20;
-			Console.WriteLine($"You healed! Your health is now: {player.health}HP");
-		}
-		else
-		{
-			Console.WriteLine("You aren't all that injured are you?");
-		}
-	}
-
+	// If the player is low show a message
+	// If you are very low show a diffrent message
 	private void LowHp()
 	{
 		if (player.health <= 40 && player.health >= 30)
 		{
 			Console.WriteLine($"U feel hurt.");
 		}
-		else if (player.health <= 20)
+		else if(player.health <= 20)
 		{
 			Console.WriteLine($"U feel miserable. U should heal!");
 		}
 	}
 
+	// Shows the commands again
 	private void PrintHelp()
 	{
 		Console.WriteLine("You are lost. You are alone.");
