@@ -13,7 +13,14 @@ class Inventory
         this.items = new Dictionary<string, Item>();
     }
 
+    public Dictionary<string, Item> getItems()
+    {
+        return items;
+    }
+
     //methods
+
+    // allows a item to be placed in a room
     public bool Put(string itemName, Item item)
     {
         Console.WriteLine($"Weight is {item.Weight}");
@@ -27,21 +34,32 @@ class Inventory
 
     public Item Get(string itemName)
     {
+        // Een tijdelijke item object
+        Item temp = null;
+
         if(items.ContainsKey(itemName))
         {
+            // Item bestaat in dictionary
+            // Eerst veilig stellen in temp
+            temp = items[itemName];
+
+            // Uit dictionary van huidige Inventory halen
             items.Remove(itemName);
         }
-        return null;
+
+        // Veiliggestelde item teruggeven.
+        return temp;
     }
 
     public int TotalWeight()
     {
         int total = 0;
-        foreach(KeyValuePair<string, Item> item in items)
+
+        foreach(var (key, item) in items)
         {
-            //Curently not working
-            //total += item.Weight;
+            total += item.Weight;
         }
+
         return total;
     }
     
