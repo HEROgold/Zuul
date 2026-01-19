@@ -1,8 +1,9 @@
+using System.Collections;
+
 class Inventory
 {
     //fields
     private int maxWeight;
-    public int weight { get; }
     private Dictionary<string, Item> items;
 
     //constructor
@@ -36,9 +37,10 @@ class Inventory
     public int TotalWeight()
     {
         int total = 0;
-        foreach(dynamic x in items)
+        foreach(KeyValuePair<string, Item> item in items)
         {
-            total += weight;
+            //Curently not working
+            //total += item.Weight;
         }
         return total;
     }
