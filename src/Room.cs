@@ -3,15 +3,22 @@ using System.Collections.Generic;
 class Room
 {
 	// Private fields
+
+	private Inventory chest;
 	private string description;
 	private Dictionary<string, Room> exits; // stores exits of this room.
 
 	// Create a room described "description". Initially, it has no exits.
 	// "description" is something like "in a kitchen" or "in a court yard".
+	public Inventory Chest
+	{
+		get { return chest; }
+	}
 	public Room(string desc)
 	{
 		description = desc;
 		exits = new Dictionary<string, Room>();
+		chest = new Inventory(10000);
 	}
 
 	// Define an exit for this room.
@@ -27,7 +34,8 @@ class Room
 	}
 
 	// Return a long description of this room, in the form:
-	//     You are in the kitchen.
+	//     You are in the kitchen.edkit = new Item(40, "Medkit");
+		// And add them to the Rooms
 	//     Exits: north, west
 	public string GetLongDescription()
 	{
