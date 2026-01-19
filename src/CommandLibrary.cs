@@ -17,6 +17,8 @@ class CommandLibrary
 		validCommands.Add("heal");
 		validCommands.Add("die");
 		validCommands.Add("quit");
+		validCommands.Add("take");
+		validCommands.Add("check");
 	}
 
 	// Check whether a given string is a valid command word.
