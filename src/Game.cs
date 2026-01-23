@@ -17,6 +17,7 @@ class Game
 		player = new Player();
 		CreateRooms();
 	}
+	//hi
 
 	// Initialise the Rooms (and the Items)
 	private void CreateRooms()
