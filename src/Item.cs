@@ -1,6 +1,7 @@
 
 class Item
 {
+    //wenis
     //fields
     public int Weight { get; }
     public string Description { get; }
