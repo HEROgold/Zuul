@@ -96,4 +96,15 @@ class Player
 	{
 		health = 0;
 	}
+
+    public void use(Command command)
+    {
+        if(!command.HasSecondWord())
+        {
+            Console.WriteLine("What do u want to use.");
+        }
+
+        string itemName = command.SecondWord;
+        
+    }
 }
