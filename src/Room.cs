@@ -27,6 +27,12 @@ class Room
 		exits.Add(direction, neighbor);
 	}
 
+
+	// public void AddItem(string description, Item heft)
+	// {
+	// 	Item.Add(description, heft);
+	// }
+
 	// Return the description of the room.
 	public string GetShortDescription()
 	{
@@ -66,4 +72,9 @@ class Room
 
 		return str;
 	}
+
+    public static implicit operator Room(string v)
+    {
+        throw new NotImplementedException();
+    }
 }
