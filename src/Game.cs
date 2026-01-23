@@ -168,6 +168,9 @@ class Game
 				checkInventory(command.SecondWord);
 				checkWeight(command.SecondWord);
 				break;
+			case "use":
+				player.use(command);
+				break;
 		}
 
 		if (player.CurrentRoom == winRoom)

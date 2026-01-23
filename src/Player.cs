@@ -97,6 +97,8 @@ class Player
 		health = 0;
 	}
 
+
+    // Uses a item
     public void use(Command command)
     {
         if(!command.HasSecondWord())
@@ -105,6 +107,16 @@ class Player
         }
 
         string itemName = command.SecondWord;
+        Item item = backpack.peek(itemName);
+        if (item == null)
+        {
+            Console.WriteLine("U don't have that as a item.");
+        }
+        backpack.Get(itemName);
         
+        if (itemName == "bandage")
+        {
+            Console.WriteLine();
+        }
     }
 }
