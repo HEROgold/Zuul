@@ -24,19 +24,26 @@ class Room
 		isLocked = false;
 	}
 
+	public void AddLock()
+	{
+		isLocked = true;
+	}
+
+	public void RemoveLock()
+	{
+		isLocked = true;
+	}
+	
 	public bool GetLock()
 	{
 		return isLocked;
 	}
-
-	
 
 	// Define an exit for this room.
 	public void AddExit(string direction, Room neighbor)
 	{
 		exits.Add(direction, neighbor);
 	}
-
 
 	// public void AddItem(string description, Item heft)
 	// {

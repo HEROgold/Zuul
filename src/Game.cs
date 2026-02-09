@@ -55,6 +55,7 @@ class Game
 		rash.AddExit("up", bile);
 		
 		teeth.AddExit("down", narrow);
+		teeth.AddLock();
 
         // Create your Items here
 		// Makes a item find more in Item.cs
@@ -62,6 +63,8 @@ class Game
 		Item medkit = new Item(40, "medkit");
 		Item key = new Item(5, "key");
 		Item nurgling = new Item(1000, "nurgling");
+		Item metalrod = new Item (30, "metalrod");
+		Item metalplate = new Item (50, "metalplate");
 
 		// And add them to the Rooms
 		carrion.Chest.Put("bandage",bandage);
@@ -69,6 +72,8 @@ class Game
 		corpse.Chest.Put("medkit", medkit);
 		bile.Chest.Put("key", key);
 		nurgle.Chest.Put("nurgling", nurgling);
+		rash.Chest.Put("metalrod", metalrod);
+		corpse.Chest.Put("metalplate", metalplate);
 	
 
 
@@ -99,9 +104,6 @@ class Game
 				Console.WriteLine("Game Over\n");
 				finished = true;
 			}
-
-
-
 		}
 		Console.ForegroundColor = ConsoleColor.White;
 		Console.WriteLine("Thank you for playing.");
@@ -145,20 +147,11 @@ class Game
 				player.Damage();
 				player.LowHp();
 				break;
-			case "quit":
-				wantToQuit = true;
-				break;
 			case "look":
 				Look();
 				break;
 			case "health":
 				player.SeeHealth();
-				break;
-			case "heal":
-				player.Heal(command.SecondWord);
-				break;
-			case "die":
-				player.Sepuccu();
 				break;
 			case "take":
 				TakeFromChest(command.SecondWord);
@@ -172,6 +165,18 @@ class Game
 				break;
 			case "use":
 				player.use(command);
+				break;
+			case "craft":
+				player.Craft(command);
+				break;
+			case "heal":
+				player.Heal(command.SecondWord);
+				break;
+			case "die":
+				player.Sepuccu();
+				break;
+			case "quit":
+				wantToQuit = true;
 				break;
 		}
 
@@ -261,7 +266,8 @@ class Game
 	    // Allows u to take a item from a room
     private bool TakeFromChest(string itemName)
     {
-        if (player.CurrentRoom.Chest != null)
+		Item testtemp = player.CurrentRoom.Chest.Peek(itemName);
+        if (testtemp != null)
         {
             // Remove itemName from chest and save it
             Item item = player.CurrentRoom.Chest.Get(itemName);

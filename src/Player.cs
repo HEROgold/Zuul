@@ -121,7 +121,7 @@ class Player
         }
 
         string itemName = command.SecondWord;
-        Item item = backpack.peek(itemName);
+        Item item = backpack.Peek(itemName);
         if (item == null)
         {
             Console.WriteLine("U don't have that as a item.");
@@ -147,7 +147,7 @@ class Player
         {
             if (health <= 100-50)
             {
-                health += 100;
+                health = 100;
                 Console.WriteLine("U used the bandage +100HP \n");
                 Console.WriteLine($"You healed! Your health is now: {health}HP");
             }
@@ -157,10 +157,10 @@ class Player
             }
             Console.WriteLine(CurrentRoom.GetLongDescription());
         }
+    }
+
+    public void Craft(Command command)
+    {
         
-        if (itemName == "key")
-        {
-            Locked();
-        }
     }
 }

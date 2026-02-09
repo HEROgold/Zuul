@@ -51,7 +51,7 @@ class Inventory
         return temp;
     }
 
-    public Item peek(string itemName)
+    public Item Peek(string itemName)
     {
         // Temp item creation
         Item temp = null;

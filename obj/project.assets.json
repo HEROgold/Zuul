@@ -8,7 +8,7 @@
     "net9.0": []
   },
   "packageFolders": {
-    "/home/stefan/.nuget/packages/": {}
+    "/root/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -16,11 +16,11 @@
       "projectUniqueName": "/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/Zuul.csproj",
       "projectName": "Zuul",
       "projectPath": "/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/Zuul.csproj",
-      "packagesPath": "/home/stefan/.nuget/packages/",
+      "packagesPath": "/root/.nuget/packages/",
       "outputPath": "/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/stefan/.nuget/NuGet/NuGet.Config"
+        "/root/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
