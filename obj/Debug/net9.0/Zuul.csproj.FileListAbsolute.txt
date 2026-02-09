@@ -12,3 +12,4 @@
 /home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/obj/Debug/net9.0/Zuul.pdb
 /home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/obj/Debug/net9.0/Zuul.genruntimeconfig.cache
 /home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/obj/Debug/net9.0/ref/Zuul.dll
+/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/obj/Debug/net9.0/Zuul.sourcelink.json

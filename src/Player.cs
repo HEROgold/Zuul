@@ -22,22 +22,36 @@ class Player
         return backpack;
     }
 
+        public string Split()
+    {
+        string separator = " ";
+
+        string result = String.Join(separator, backpack.getItems());
+        return result;
+    }
+
+    public bool Locked()
+	{
+        Console.WriteLine("U may now enter locked doors \n");
+        return false;
+	}
+
     public Item Place(string itemName)
     {
-        // Een tijdelijke item object
+        // A temp item object
         Item temp = null;
 
         if(backpack.getItems().ContainsKey(itemName))
         {
-            // Item bestaat in dictionary
-            // Eerst veilig stellen in temp
+            // Item exists in Inventory?
+            // Secure item
             temp = backpack.getItems()[itemName];
 
-            // Uit dictionary van huidige Inventory halen
+            // Remove from dictionary
             backpack.getItems().Remove(itemName);
         }
 
-        // Veiliggestelde item teruggeven.
+        // Return saved item
         return temp;
     }
 
@@ -116,7 +130,37 @@ class Player
         
         if (itemName == "bandage")
         {
-            Console.WriteLine();
+            if (health <= 100-20)
+            {
+                health += 20;
+                Console.WriteLine("U used the bandage +20HP \n");
+                Console.WriteLine($"You healed! Your health is now: {health}HP");
+            }
+            else
+            {
+                Console.WriteLine("You aren't all that injured are you? \n");
+            }
+            Console.WriteLine(CurrentRoom.GetLongDescription());
+        }
+        
+        if (itemName == "medkit")
+        {
+            if (health <= 100-50)
+            {
+                health += 100;
+                Console.WriteLine("U used the bandage +100HP \n");
+                Console.WriteLine($"You healed! Your health is now: {health}HP");
+            }
+            else
+            {
+                Console.WriteLine("You aren't all that injured are you? \n");
+            }
+            Console.WriteLine(CurrentRoom.GetLongDescription());
+        }
+        
+        if (itemName == "key")
+        {
+            Locked();
         }
     }
 }

@@ -6,6 +6,7 @@ class Room
 
 	private Inventory chest;
 	private string description;
+	private bool isLocked;
 	private Dictionary<string, Room> exits; // stores exits of this room.
 
 	// Create a room described "description". Initially, it has no exits.
@@ -14,12 +15,21 @@ class Room
 	{
 		get { return chest; }
 	}
+
 	public Room(string desc)
 	{
 		description = desc;
 		exits = new Dictionary<string, Room>();
 		chest = new Inventory(10000);
+		isLocked = false;
 	}
+
+	public bool GetLock()
+	{
+		return isLocked;
+	}
+
+	
 
 	// Define an exit for this room.
 	public void AddExit(string direction, Room neighbor)

@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/stefan/Desktop/New Folder/Zuul.csproj",
+      "projectUniqueName": "/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/Zuul.csproj",
       "projectName": "Zuul",
-      "projectPath": "/home/stefan/Desktop/New Folder/Zuul.csproj",
+      "projectPath": "/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/Zuul.csproj",
       "packagesPath": "/root/.nuget/packages/",
-      "outputPath": "/home/stefan/Desktop/New Folder/obj/",
+      "outputPath": "/home/stefan/Schoolwerk/module_4/zuul/Zuul/Zuul/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/root/.nuget/NuGet/NuGet.Config"

@@ -65,9 +65,11 @@ class Game
 
 		// And add them to the Rooms
 		carrion.Chest.Put("bandage",bandage);
+		carrion.Chest.Put("key", key);
 		corpse.Chest.Put("medkit", medkit);
 		bile.Chest.Put("key", key);
 		nurgle.Chest.Put("nurgling", nurgling);
+	
 
 
 		// Start game carrion
