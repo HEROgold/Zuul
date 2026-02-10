@@ -5,7 +5,8 @@ class Player
     //fields
     private Inventory backpack;
     public int health;
-        // auto property
+    // auto property
+    private string[] craftItem;
     public Room CurrentRoom { get; set; }
     // constructor
 
@@ -147,8 +148,8 @@ class Player
         {
             if (health <= 100-50)
             {
+                Console.WriteLine($"U used the medkit +{100-health}HP \n");
                 health = 100;
-                Console.WriteLine("U used the bandage +100HP \n");
                 Console.WriteLine($"You healed! Your health is now: {health}HP");
             }
             else
@@ -161,6 +162,10 @@ class Player
 
     public void Craft(Command command)
     {
-        
+        // craftItem
+        if(!command.HasSecondWord() || !command.HasThirdWord())
+        {
+            Console.WriteLine("What do u want to use in crafting.");
+        }
     }
 }
