@@ -8,6 +8,7 @@ class Game
 	private Parser parser;
 	private Player player;
 	private Room winRoom;
+	private List<string> ItemLib = new List<string>();
 
 
     // Constructor
@@ -31,6 +32,7 @@ class Game
 		Room bile = new Room("in a pool of bile, u feel your skin crawl");
 		Room rash = new Room("in a room filled with rashes, I feel like i'm gonna vomit");
 		Room teeth = new Room("in a room filled with teeth, it makes me uneasy");
+		Room secret = new Room("in the nurgles mouth. Why did I decide to do this...");
 
 		// Initialise room exits
 		carrion.AddExit("east", narrow);
@@ -45,6 +47,7 @@ class Game
 
 		nurgle.AddExit("north", carrion);
 		nurgle.AddExit("east", silence);
+		nurgle.AddExit("inside", secret);
 
 		silence.AddExit("west", nurgle);
 
@@ -64,17 +67,26 @@ class Game
 		Item key = new Item(5, "key");
 		Item nurgling = new Item(1000, "nurgling");
 		Item metalrod = new Item (30, "metalrod");
-		Item metalplate = new Item (50, "metalplate");
+		Item piston = new Item (50, "piston");
+		Item ducttape = new Item (5, "ducttape");
+		Item hydraulics = new Item (70, "hydraulics");
+
+		//ItemLib.AddRange(bandage, medkit, key, nurgling, metalrod, piston, ducttape, hydraulics);
 
 		// And add them to the Rooms
 		carrion.Chest.Put("bandage",bandage);
 		carrion.Chest.Put("key", key);
 		carrion.Chest.Put("medkit", medkit);
+		carrion.Chest.Put("metalrod", metalrod);
+		carrion.Chest.Put("piston", piston);
+		carrion.Chest.Put("ducttape", ducttape);
 		corpse.Chest.Put("medkit", medkit);
 		bile.Chest.Put("key", key);
 		nurgle.Chest.Put("nurgling", nurgling);
 		rash.Chest.Put("metalrod", metalrod);
-		corpse.Chest.Put("metalplate", metalplate);
+		corpse.Chest.Put("piston", piston);
+		narrow.Chest.Put("ducttape", ducttape);
+
 	
 
 
@@ -122,6 +134,7 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
+
 		// Description info at Room.cs
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
@@ -183,7 +196,11 @@ class Game
 				break;
 
 			case "craft":
-				player.Craft(command);
+				string craftable = player.Craft(command);
+				if (craftable == "hydraulics")
+				{
+					// ItemLib
+				}
 				break;
 
 			case "heal":
@@ -267,7 +284,7 @@ class Game
 	{
 		if(!command.HasSecondWord())
 		{
-			// if there is no second word, we don't know where to go...
+			// if there is no secohydraulicsnd word, we don't know where to go...
 			Console.WriteLine("Go where?");
 			return;
 		}
@@ -277,13 +294,16 @@ class Game
 		Room nextRoom = player.CurrentRoom.GetExit(direction);
 		if (nextRoom == null)
 		{
-			Console.WriteLine($"There is no door to {direction}!\nSee -help- for more info.");
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine($"There is no door to {direction}!\n{Console.ForegroundColor = ConsoleColor.White}See -help- for more info.");
 			return;
 		}
 		
 		if (nextRoom.GetLock() == true)
 		{
+			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine("This door is locked.");
+			Console.ForegroundColor = ConsoleColor.White;
 			return;
 		}
 
