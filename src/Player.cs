@@ -6,7 +6,6 @@ class Player
     private Inventory backpack;
     public int health;
     // auto property
-    private List<string> craftItem = new List<string>();
     public Room CurrentRoom { get; set; }
     // constructor
 
@@ -59,7 +58,9 @@ class Player
             if (health <= 100-hptot)
             {
                 health += hptot;
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"You healed! Your health is now: {health}HP");
+                Console.ForegroundColor = ConsoleColor.White;
             }
             else
             {
@@ -68,7 +69,9 @@ class Player
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Please add a valid number...");
+            Console.ForegroundColor = ConsoleColor.White;
         }
 	}
 
@@ -80,7 +83,9 @@ class Player
             if (health >= hptot)
             {
                 health -= hptot;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"You took {hptot} damage! Your health is now: {health}HP");
+                Console.ForegroundColor = ConsoleColor.White;
             }
             else
             {
@@ -99,11 +104,15 @@ class Player
 	{
 		if (health <= 40 && health >= 30)
 		{
-			Console.WriteLine($"U feel hurt.");
+            Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine($"You feel hurt.");
+            Console.ForegroundColor = ConsoleColor.White;
 		}
 		else if(health <= 20)
 		{
-			Console.WriteLine($"U feel miserable. U should heal!");
+            Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine($"You feel miserable. U should heal!");
+            Console.ForegroundColor = ConsoleColor.White;
 		}
 	}
 
@@ -173,7 +182,7 @@ class Player
     {
         if(!command.HasSecondWord())
         {
-            Console.WriteLine("What do u want to use.\n");
+            Console.WriteLine("What do u want to use?\n");
         }
 
         string itemName = command.SecondWord;
@@ -181,50 +190,128 @@ class Player
         backpack.Get(itemName);
         if (item == null)
         {
-            Console.WriteLine("U don't have that as a item.\n");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("You don't have that as a item.\n");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(CurrentRoom.GetLongDescription());
             return;
         }
         
         // Checks what item it is then uses it
-        if (itemName == "bandage")
+        switch(itemName)
         {
-            if (health <= 100-20)
-            {
-                health += 20;
-                Console.WriteLine("U used the bandage +20HP");
-                Console.WriteLine($"You healed! Your health is now: {health}HP\n");
-            }
-            else
-            {
-                Console.WriteLine("You aren't all that injured are you? \n");
-            }
-            Console.WriteLine(CurrentRoom.GetLongDescription());
-        }
-        
-        if (itemName == "medkit")
-        {
-            if (health <= 100-50)
-            {
-                Console.WriteLine($"U used the medkit +{100-health}HP");
-                health = 100;
-                Console.WriteLine($"You healed! Your health is now: {health}HP\n");
-            }
-            else
-            {
-                Console.WriteLine("You aren't all that injured are you? \n");
-            }
-            Console.WriteLine(CurrentRoom.GetLongDescription());
+            case "bandage":
+                if (health <= 100-20)
+                {
+                    health += 20;
+                    Console.WriteLine("U used the bandage +20HP");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"You healed! Your health is now: {health}HP\n");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                else
+                {
+                    Console.WriteLine("I'm not all that hurt, so I have no need for this now.\n");
+                }
+                
+                Console.WriteLine(CurrentRoom.GetLongDescription());
+                break;
+
+            case "medkit":
+                if (health <= 100-50)
+                {
+                    Console.WriteLine($"U used the medkit +{100-health}HP");
+                    health = 100;
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"You healed! Your health is now: {health}HP\n");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+                else
+                {
+                    Console.WriteLine("It would be a waste to use this right now.\n");
+                }
+
+                Console.WriteLine(CurrentRoom.GetLongDescription());
+                break;
+
+            case "key":
+
+                Room lockedRoom = CurrentRoom.GetExit(command.ThirdWord);
+
+                if (lockedRoom == null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("No room in that direction.\n");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(CurrentRoom.GetLongDescription());
+                    return;
+                }
+
+                else if (!lockedRoom.GetLock())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Room isn't locked.\n");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(CurrentRoom.GetLongDescription());
+                    return;
+                }
+
+                lockedRoom.RemoveLock();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("The door is now unlocked.\n");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine(CurrentRoom.GetLongDescription());
+                break;
         }
     }
 
-    public void Craft(Command command)
+    // Allows the crafting of the hydrolics item if the correct items are called
+    public string Craft(Command command)
     {
-        craftItem.Add(command.SecondWord);
-        craftItem.Add(command.ThirdWord);
-        
-        if(!command.HasSecondWord() || !command.HasThirdWord())
+        if  (!command.HasSecondWord() || !command.HasThirdWord())
         {
             Console.WriteLine("What do u want to use in crafting.\n");
+            return null;
         }
+
+        else if (!command.HasFourthWord())
+        {
+            Console.WriteLine("I need one more thing.\n");
+            return null;
+        }
+
+        Item craftItem = backpack.Peek(command.SecondWord);
+        Item craftItem2 = backpack.Peek(command.ThirdWord);
+        Item craftItem3 = backpack.Peek(command.FourthWord);
+
+        if (craftItem == null || craftItem2 == null || craftItem3 == null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("You don't have that item.");
+            Console.ForegroundColor = ConsoleColor.White;
+            return null;
+        }
+
+        Dictionary<string,Item> craftingshit = new Dictionary<string, Item>();
+
+        craftingshit.Add(command.SecondWord,craftItem);
+        craftingshit.Add(command.ThirdWord,craftItem2);
+        craftingshit.Add(command.FourthWord,craftItem3);
+
+        if (!craftingshit.ContainsKey("metalbar") || !craftingshit.ContainsKey("piston") || !craftingshit.ContainsKey("ducttape"));
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Those weren't the correct items.\n");
+            Console.ForegroundColor = ConsoleColor.White;
+            return null;
+        }
+
+        if (craftingshit.ContainsKey("metalbar") && craftingshit.ContainsKey("piston") && craftingshit.ContainsKey("ducttape"));
+        {
+            return "hydraulics";
+        }
+        
     }
 }
