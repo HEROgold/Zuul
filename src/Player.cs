@@ -7,6 +7,8 @@ class Player
     public int health;
     // auto property
     public Room CurrentRoom { get; set; }
+    public int enemyAttack = 0;
+    Random rndnum = new Random();
     // constructor
 
     // Makes a player with HP and a Inventory
@@ -123,7 +125,7 @@ class Player
     }
     
     // Allows the player to see how much they are carrying and the space left
-	public void checkWeight(string weight)
+	public void checkWeight()
 	{
 		Console.Write("Total used weight is: ");
 		Console.WriteLine(getBackpack().TotalWeight());
@@ -137,7 +139,20 @@ class Player
 		health = 0;
 	}
 
-    	    // Allows u to take a item from a room
+    public void EnemyAttack()
+    {
+		int dodgenr = rndnum.Next(1,11);
+		if (dodgenr == 1)
+		{
+			health -= enemyAttack;
+		}
+		else
+		{
+			enemyAttack = rndnum.Next(5,15);
+			health -= enemyAttack;
+		}
+    }
+    // Allows u to take a item from a room
     public bool TakeFromChest(string itemName)
     {
 		Item testtemp = CurrentRoom.Chest.Peek(itemName);
@@ -149,11 +164,12 @@ class Player
             // Add the item we took to the backpack
             getBackpack().Put(itemName, item);
 
+            Console.WriteLine($"You took {itemName} from the chest.");
             // Return true
             return true;
         }
-
         // If empty return false
+        Console.WriteLine($"The item {itemName} doesn't exist here.");
         return false;
     }
 
@@ -175,14 +191,13 @@ class Player
         // If empty return false
         return false;
     }
-
-
     // Uses a item
-    public void use(Command command)
+    public void Use(Command command)
     {
         if(!command.HasSecondWord())
         {
             Console.WriteLine("What do u want to use?\n");
+            return;
         }
 
         string itemName = command.SecondWord;
@@ -204,7 +219,7 @@ class Player
                 if (health <= 100-20)
                 {
                     health += 20;
-                    Console.WriteLine("U used the bandage +20HP");
+                    Console.WriteLine("You used the bandage +20HP");
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"You healed! Your health is now: {health}HP\n");
                     Console.ForegroundColor = ConsoleColor.White;
@@ -300,7 +315,7 @@ class Player
         craftingshit.Add(command.ThirdWord,craftItem2);
         craftingshit.Add(command.FourthWord,craftItem3);
 
-        if (!craftingshit.ContainsKey("metalbar") || !craftingshit.ContainsKey("piston") || !craftingshit.ContainsKey("ducttape"));
+        if (!craftingshit.ContainsKey("metalrod") || !craftingshit.ContainsKey("piston") || !craftingshit.ContainsKey("ducttape"))
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Those weren't the correct items.\n");
@@ -308,10 +323,9 @@ class Player
             return null;
         }
 
-        if (craftingshit.ContainsKey("metalbar") && craftingshit.ContainsKey("piston") && craftingshit.ContainsKey("ducttape"));
+        else
         {
             return "hydraulics";
         }
-        
     }
 }
