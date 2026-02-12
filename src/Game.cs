@@ -8,7 +8,10 @@ class Game
 	private Parser parser;
 	private Player player;
 	private Room winRoom;
-
+	private Room nurgleRoom;
+	private List<string> ItemLib = new List<string>();
+	private List<string> RoomLib = new List<string>();
+	Random rndnum = new Random();
 
     // Constructor
 	// Makes the player object, parser object and room objects
@@ -31,6 +34,11 @@ class Game
 		Room bile = new Room("in a pool of bile, u feel your skin crawl");
 		Room rash = new Room("in a room filled with rashes, I feel like i'm gonna vomit");
 		Room teeth = new Room("in a room filled with teeth, it makes me uneasy");
+		Room secret = new Room("in the nurgles mouth. Why did I decide to do this...");
+
+		RoomLib.AddRange(carrion.GetShortDescription(), narrow.GetShortDescription(), corpse.GetShortDescription(), nurgle.GetShortDescription(),
+		silence.GetShortDescription(), bile.GetShortDescription(), rash.GetShortDescription(), teeth.GetShortDescription(),
+		secret.GetShortDescription());
 
 		// Initialise room exits
 		carrion.AddExit("east", narrow);
@@ -45,6 +53,9 @@ class Game
 
 		nurgle.AddExit("north", carrion);
 		nurgle.AddExit("east", silence);
+		nurgle.AddExit("inside", secret);
+
+		secret.AddNurgleLock();
 
 		silence.AddExit("west", nurgle);
 
@@ -64,24 +75,39 @@ class Game
 		Item key = new Item(5, "key");
 		Item nurgling = new Item(1000, "nurgling");
 		Item metalrod = new Item (30, "metalrod");
-		Item metalplate = new Item (50, "metalplate");
+		Item piston = new Item (50, "piston");
+		Item ducttape = new Item (5, "ducttape");
+		Item hydraulics = new Item (70, "hydraulics");
+
+		ItemLib.AddRange(bandage.Description, medkit.Description, key.Description, nurgling.Description, metalrod.Description, piston.Description, ducttape.Description, hydraulics.Description);
 
 		// And add them to the Rooms
 		carrion.Chest.Put("bandage",bandage);
-		carrion.Chest.Put("key", key);
-		carrion.Chest.Put("medkit", medkit);
+		// carrion.Chest.Put("key", key);
+		// carrion.Chest.Put("medkit", medkit);
+		// carrion.Chest.Put("metalrod", metalrod);
+		// carrion.Chest.Put("piston", piston);
+		// carrion.Chest.Put("ducttape", ducttape);
+		// carrion.Chest.Put("hydraulics", hydraulics);
 		corpse.Chest.Put("medkit", medkit);
 		bile.Chest.Put("key", key);
 		nurgle.Chest.Put("nurgling", nurgling);
 		rash.Chest.Put("metalrod", metalrod);
-		corpse.Chest.Put("metalplate", metalplate);
-	
+		corpse.Chest.Put("piston", piston);
+		narrow.Chest.Put("ducttape", ducttape);
 
+		// Create enemies
+		Enemy mountofflesh = new Enemy(100, "mountofflesh", player.enemyAttack);
+
+		// Add enemies to rooms
+		narrow.addEnemy(mountofflesh);
 
 		// Start game carrion
 		player.CurrentRoom = carrion;
 
 		winRoom = teeth;
+
+		nurgleRoom = secret;
 	}
 
 	//  Main play routine. Loops until end of play.
@@ -89,6 +115,8 @@ class Game
 	public void Play()
 	{
 		PrintWelcome();
+		PrintHelp();
+		Console.WriteLine($"\n", player.CurrentRoom.GetLongDescription());
 
 		// Enter the main command loop. Here we repeatedly read commands and
 		// execute them until the player wants to quit.
@@ -98,8 +126,8 @@ class Game
 			Command command = parser.GetCommand();
 			finished = ProcessCommand(command);
 
-			// Checks if health is == 0 then stops and makes color red
-			if (player.health == 0)
+			// Checks if health is <= 0 then stops and makes color red
+			if (player.health <= 0)
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("Game Over\n");
@@ -112,7 +140,15 @@ class Game
 		Console.WriteLine("Press [Enter] to continue.");
 		Console.ReadLine();
     }	
-	
+
+	public void Devoured()
+	{
+		if (player.CurrentRoom == nurgleRoom)
+		{
+			Console.WriteLine("Why did I do this. I should have known it would kill me.\n");
+			player.health = 0;
+		}
+	}
 
 	// Print out the opening message for the player.
 	private void PrintWelcome()
@@ -122,8 +158,6 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
-		// Description info at Room.cs
-		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
 
 	// Given a command, process (that is: execute) the command.
@@ -147,8 +181,6 @@ class Game
 
 			case "go":
 				GoRoom(command);
-				player.Damage();
-				player.LowHp();
 				break;
 
 			case "look":
@@ -168,22 +200,22 @@ class Game
 				break;
 
 			case "backpack":
-				checkInventory(command.SecondWord);
-				player.checkWeight(command.SecondWord);
+				checkInventory();
+				player.checkWeight();
 				break;
 
 			case "checkall":
 				player.SeeHealth();
-				checkInventory(command.SecondWord);
-				player.checkWeight(command.SecondWord);
+				checkInventory();
+				player.checkWeight();
 				break;
 
 			case "use":
-				player.use(command);
+				player.Use(command);
 				break;
 
 			case "craft":
-				player.Craft(command);
+				CraftHelp(command);
 				break;
 
 			case "heal":
@@ -200,6 +232,10 @@ class Game
 
 			case "damage":
 				player.damageNum(command.SecondWord);
+				break;
+
+			case "attack":
+				PlayerAttack();
 				break;
 		}
 
@@ -240,6 +276,25 @@ class Game
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
 
+	private void CraftHelp(Command command)
+	{
+		string craftable = player.Craft(command);
+		if (craftable == "hydraulics")
+		{
+			player.PutInChest(command.SecondWord);player.PutInChest(command.ThirdWord);player.PutInChest(command.FourthWord);
+			player.CurrentRoom.Chest.Get(command.SecondWord);player.CurrentRoom.Chest.Get(command.ThirdWord);player.CurrentRoom.Chest.Get(command.FourthWord);
+			
+			Console.WriteLine("You crafted hydraulics!\n");
+			player.getBackpack().Put("hydraulics", new Item(70, "hydraulics"));
+		}
+		else
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine("You can't craft that.\n");
+			Console.ForegroundColor = ConsoleColor.White;
+		}
+	}
+
 	// Shows the commands again
 	private void PrintHelp()
 	{
@@ -251,7 +306,7 @@ class Game
 	}
 
 	//See what you have in your inventory
-	private void checkInventory(string items)
+	private void checkInventory()
 	{
 		foreach( var (_, item) in player.getBackpack().getItems())
 		{
@@ -267,7 +322,7 @@ class Game
 	{
 		if(!command.HasSecondWord())
 		{
-			// if there is no second word, we don't know where to go...
+			// if there is no secohydraulicsnd word, we don't know where to go...
 			Console.WriteLine("Go where?");
 			return;
 		}
@@ -277,17 +332,77 @@ class Game
 		Room nextRoom = player.CurrentRoom.GetExit(direction);
 		if (nextRoom == null)
 		{
-			Console.WriteLine($"There is no door to {direction}!\nSee -help- for more info.");
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine($"There is no door to {direction}!\n{Console.ForegroundColor = ConsoleColor.White}See -help- for more info.");
 			return;
 		}
 		
 		if (nextRoom.GetLock() == true)
 		{
+			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine("This door is locked.");
+			Console.ForegroundColor = ConsoleColor.White;
+			return;
+		}
+
+		if (nextRoom.GetNurgleLock() == true)
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine("It's mouth is closed maybe I can open it.");
+			Console.ForegroundColor = ConsoleColor.White;
+			return;
+		}
+
+		if (player.CurrentRoom.enemy != null)
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine("There is a enemy in this room use attack to kill it.");
+			Console.ForegroundColor = ConsoleColor.White;
 			return;
 		}
 
 		player.CurrentRoom = nextRoom;
+		player.Damage();
+		player.LowHp();
+		Devoured();
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
+	}
+	public void PlayerAttack()
+	{	
+		if (player.CurrentRoom.enemy == null)
+		{
+			Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine("There is nothing here to attack.\n"); Console.ForegroundColor = ConsoleColor.White;
+			return;
+		}
+		int playerAttack = 0;
+		int dodgenrplayer = rndnum.Next(1,11);
+		if (dodgenrplayer == 1)
+		{
+			player.CurrentRoom.enemy.DamageEnemy(playerAttack);
+		}
+		else
+		{
+			playerAttack = rndnum.Next(15,26);
+			player.CurrentRoom.enemy.DamageEnemy(playerAttack);
+		}
+
+		player.EnemyAttack(); 
+		
+		Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine($"You got hit for {player.enemyAttack} damage. You got {player.health}HP left\n"); Console.ForegroundColor = ConsoleColor.Green;
+		if (player.CurrentRoom.enemy.CurrentHealthEnemy > 0)
+		{
+			Console.WriteLine($"You hit the enemy for {playerAttack} damage. It still has {player.CurrentRoom.enemy.CurrentHealthEnemy}HP remaining\n");
+			Console.ForegroundColor = ConsoleColor.White;
+		}
+		else
+		{
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine("You slayed the thing.");
+			Console.ForegroundColor = ConsoleColor.White;
+		}
+		if (!player.CurrentRoom.enemy.EnemyIsAlive())
+		{
+			player.CurrentRoom.enemy = null;
+		}
 	}
 }
