@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 class Player
 {
     private PlayerStats stats;
@@ -27,4 +29,3 @@ class Player
     public string GetStatusDescription() => stats.GetStatusDescription();
     public string GetFullStatus() => $"{stats}\n{GetStatusDescription()}";
 }
-
