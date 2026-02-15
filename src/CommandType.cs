@@ -9,7 +9,16 @@ public enum CommandType
     Go,
     Quit,
     Look,
-    Health
+    Health,
+    Take,
+    Place,
+    Backpack,
+    Use,
+    Craft,
+    Attack,
+    Heal,
+    Damage,
+    Die
 }
 
 // Extension methods for CommandType
@@ -21,7 +30,16 @@ public static class CommandTypeExtensions
         { "go", CommandType.Go },
         { "quit", CommandType.Quit },
         { "look", CommandType.Look },
-        { "health", CommandType.Health }
+        { "health", CommandType.Health },
+        { "take", CommandType.Take },
+        { "place", CommandType.Place },
+        { "backpack", CommandType.Backpack },
+        { "use", CommandType.Use },
+        { "craft", CommandType.Craft },
+        { "attack", CommandType.Attack },
+        { "heal", CommandType.Heal },
+        { "damage", CommandType.Damage },
+        { "die", CommandType.Die }
     };
 
     private static readonly Dictionary<CommandType, string> commandToStringMap = new()
@@ -30,7 +48,16 @@ public static class CommandTypeExtensions
         { CommandType.Go, "go" },
         { CommandType.Quit, "quit" },
         { CommandType.Look, "look" },
-        { CommandType.Health, "health" }
+        { CommandType.Health, "health" },
+        { CommandType.Take, "take" },
+        { CommandType.Place, "place" },
+        { CommandType.Backpack, "backpack" },
+        { CommandType.Use, "use" },
+        { CommandType.Craft, "craft" },
+        { CommandType.Attack, "attack" },
+        { CommandType.Heal, "heal" },
+        { CommandType.Damage, "damage" },
+        { CommandType.Die, "die" }
     };
 
     private static readonly Dictionary<CommandType, string> commandDescriptions = new()
@@ -39,7 +66,16 @@ public static class CommandTypeExtensions
         { CommandType.Go, "Move to another room (requires direction)" },
         { CommandType.Quit, "Exit the game" },
         { CommandType.Look, "Look around the current room" },
-        { CommandType.Health, "Check your current health" }
+        { CommandType.Health, "Check your current health" },
+        { CommandType.Take, "Take an item from the room" },
+        { CommandType.Place, "Place an item in the room" },
+        { CommandType.Backpack, "Check your backpack" },
+        { CommandType.Use, "Use an item" },
+        { CommandType.Craft, "Craft an item" },
+        { CommandType.Attack, "Attack an enemy" },
+        { CommandType.Heal, "Heal yourself" },
+        { CommandType.Damage, "Take damage (debug)" },
+        { CommandType.Die, "Kill yourself (debug)" }
     };
 
     // Convert string to CommandType
@@ -68,7 +104,17 @@ public static class CommandTypeExtensions
     // Check if command needs a second parameter
     public static bool RequiresParameter(this CommandType type)
     {
-        return type == CommandType.Go;
+        return type switch
+        {
+            CommandType.Go => true,
+            CommandType.Take => true,
+            CommandType.Place => true,
+            CommandType.Use => true,
+            CommandType.Craft => true,
+            CommandType.Heal => true,
+            CommandType.Damage => true,
+            _ => false
+        };
     }
 
     // Get all valid command types (excluding Unknown)
@@ -80,7 +126,16 @@ public static class CommandTypeExtensions
             CommandType.Go,
             CommandType.Quit,
             CommandType.Look,
-            CommandType.Health
+            CommandType.Health,
+            CommandType.Take,
+            CommandType.Place,
+            CommandType.Backpack,
+            CommandType.Use,
+            CommandType.Craft,
+            CommandType.Attack,
+            CommandType.Heal,
+            CommandType.Damage,
+            CommandType.Die
         };
     }
 }

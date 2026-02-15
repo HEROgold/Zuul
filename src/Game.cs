@@ -7,7 +7,10 @@ class Game
     private readonly Parser parser;
     private readonly Player player;
     private Room mapRoom;
+    private Room winRoom;
+    private Room nurgleRoom;
     private string campusMap;
+    private Random rndnum = new Random();
 
     public Game()
     {
@@ -59,6 +62,29 @@ class Game
 
         infirmary.AddExit(Direction.North, ExitProvider.Normal(lab));
 
+        // Add items to rooms
+        Item bandage = new Item(10, "bandage");
+        Item medkit = new Item(40, "medkit");
+        Item key = new Item(5, "key");
+        Item metalrod = new Item(30, "metalrod");
+        Item piston = new Item(50, "piston");
+        Item ducttape = new Item(5, "ducttape");
+
+        outside.Chest.Put("bandage", bandage);
+        pub.Chest.Put("medkit", medkit);
+        cellar.Chest.Put("key", key);
+        backyard.Chest.Put("metalrod", metalrod);
+        lab.Chest.Put("piston", piston);
+        kitchen.Chest.Put("ducttape", ducttape);
+
+        // Add enemies to rooms
+        Enemy mountofflesh = new Enemy(100, "mountofflesh", 10, kitchen);
+        kitchen.AddEnemy(mountofflesh);
+
+        // Set special rooms
+        winRoom = theatre;
+        nurgleRoom = cellar;
+
         Room[] rooms =
         {
             outside, theatre, pub, lab, office, mapRoom, kitchen, cellar, backyard, infirmary
@@ -100,18 +126,33 @@ class Game
 
             finished = ProcessCommand(command);
 
+            // Check for win condition
+            if (player.CurrentRoom == winRoom)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\nYou Won\n");
+                finished = true;
+            }
+
+            // Check for death
             if (!player.IsAlive)
             {
                 Console.WriteLine("\n=== Game Over ===");
                 Console.WriteLine("Your health has reached zero!");
                 finished = true;
             }
+
+            // Check if devoured by Nurgle
+            if (player.CurrentRoom == nurgleRoom)
+            {
+                Console.WriteLine("Why did I do this. I should have known it would kill me.\n");
+                player.Sepukku();
+            }
         }
         Console.WriteLine("\nThank you for playing.");
         Console.WriteLine("Press [Enter] to continue.");
         Console.ReadLine();
     }
-
 
     private void PrintWelcome()
     {
@@ -132,6 +173,15 @@ class Game
             CommandType.Quit => true,
             CommandType.Look => ExecuteCommand(Look),
             CommandType.Health => ExecuteCommand(SeeHealth),
+            CommandType.Take => ExecuteCommand(() => TakeItem(command)),
+            CommandType.Place => ExecuteCommand(() => PlaceItem(command)),
+            CommandType.Backpack => ExecuteCommand(CheckBackpack),
+            CommandType.Use => ExecuteCommand(() => UseItem(command)),
+            CommandType.Craft => ExecuteCommand(() => CraftItem(command)),
+            CommandType.Attack => ExecuteCommand(PlayerAttack),
+            CommandType.Heal => ExecuteCommand(() => HealPlayer(command)),
+            CommandType.Damage => ExecuteCommand(() => DamagePlayer(command)),
+            CommandType.Die => ExecuteCommand(() => player.Sepukku()),
             CommandType.Unknown => false,
             _ => ExecuteCommand(() => Console.WriteLine("Command not recognized."))
         };
@@ -146,6 +196,20 @@ class Game
     private void Look()
     {
         bool showMap = player.CurrentRoom == mapRoom;
+        
+        // Show items in room
+        if (player.CurrentRoom.Chest != null)
+        {
+            foreach (var (_, item) in player.CurrentRoom.Chest.getItems())
+            {
+                Console.WriteLine("You found:");
+                Console.Write(item.Description);
+                Console.Write(" - ");
+                Console.WriteLine(item.Weight);
+                Console.WriteLine($"Type take {item.Description} to grab the item.\n");
+            }
+        }
+        
         Console.WriteLine(GetRoomDescription(player.CurrentRoom, showMap));
     }
 
@@ -156,6 +220,16 @@ class Game
         Console.WriteLine(player.GetStatusDescription());
         Console.WriteLine($"Score: {player.Score}");
         Console.WriteLine($"Moves: {player.MovesCount}");
+        
+        // Show inventory
+        Console.WriteLine("\n=== Backpack ===");
+        foreach (var (_, item) in player.GetBackpack().getItems())
+        {
+            Console.Write(item.Description);
+            Console.Write(" - ");
+            Console.WriteLine(item.Weight);
+        }
+        player.CheckWeight();
     }
 
     private void PrintHelp()
@@ -188,8 +262,36 @@ class Game
             return;
         }
 
+        // Check for locked rooms
+        if (exit.Destination.GetLock())
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("This door is locked.");
+            Console.ForegroundColor = ConsoleColor.White;
+            return;
+        }
+
+        // Check for Nurgle lock
+        if (exit.Destination.GetNurgleLock())
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("It's mouth is closed maybe I can open it.");
+            Console.ForegroundColor = ConsoleColor.White;
+            return;
+        }
+
+        // Check for enemies
+        if (player.CurrentRoom.enemy != null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("There is a enemy in this room. You must defeat it first!");
+            Console.ForegroundColor = ConsoleColor.White;
+            return;
+        }
+
         exit.Traverse(player);
         player.IncrementMoveCounter();
+        player.LowHp();
         Console.WriteLine(GetRoomDescription(player.CurrentRoom));
     }
 
@@ -203,5 +305,158 @@ class Game
         }
 
         return description;
+    }
+
+    private void PlayerAttack()
+    {
+        if (player.CurrentRoom.enemy == null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("There is nothing here to attack.\n");
+            Console.ForegroundColor = ConsoleColor.White;
+            return;
+        }
+
+        int playerAttack = 0;
+        int dodgenrplayer = rndnum.Next(1, 11);
+        if (dodgenrplayer == 1)
+        {
+            playerAttack = 0; // Player missed
+        }
+        else
+        {
+            playerAttack = rndnum.Next(15, 26);
+            player.CurrentRoom.enemy.DamageEnemy(playerAttack);
+        }
+
+        player.EnemyAttack();
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"You got hit for {player.enemyAttack} damage. You got {player.Health}HP left\n");
+        Console.ForegroundColor = ConsoleColor.Green;
+        
+        if (player.CurrentRoom.enemy.CurrentHealthEnemy > 0)
+        {
+            Console.WriteLine($"You hit the enemy for {playerAttack} damage. It still has {player.CurrentRoom.enemy.CurrentHealthEnemy}HP remaining\n");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("You slayed the thing.");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        
+        if (!player.CurrentRoom.enemy.EnemyIsAlive())
+        {
+            player.CurrentRoom.enemy = null;
+        }
+    }
+
+    private void TakeItem(Command command)
+    {
+        if (!command.HasParameter())
+        {
+            Console.WriteLine("Take what?");
+            return;
+        }
+        player.TakeFromChest(command.Parameter);
+    }
+
+    private void PlaceItem(Command command)
+    {
+        if (!command.HasParameter())
+        {
+            Console.WriteLine("Place what?");
+            return;
+        }
+        player.PutInChest(command.Parameter);
+    }
+
+    private void CheckBackpack()
+    {
+        Console.WriteLine("\n=== Backpack ===");
+        foreach (var (_, item) in player.GetBackpack().getItems())
+        {
+            Console.Write(item.Description);
+            Console.Write(" - ");
+            Console.WriteLine(item.Weight);
+        }
+        player.CheckWeight();
+    }
+
+    private void UseItem(Command command)
+    {
+        if (!command.HasParameter())
+        {
+            Console.WriteLine("Use what?");
+            return;
+        }
+        player.UseItem(command.Parameter);
+    }
+
+    private void CraftItem(Command command)
+    {
+        // For crafting, we need 3 items - for now just show message
+        Console.WriteLine("Craft command needs 3 items. Use the menu to specify items.");
+        // TODO: Enhance menu system to support multiple parameters
+    }
+
+    private void HealPlayer(Command command)
+    {
+        if (!command.HasParameter())
+        {
+            Console.WriteLine("Heal how much?");
+            return;
+        }
+
+        if (int.TryParse(command.Parameter, out int amount))
+        {
+            if (player.Health <= player.MaxHealth - amount)
+            {
+                player.Heal(amount);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"You healed! Your health is now: {player.Health}HP");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else
+            {
+                Console.WriteLine("You aren't all that injured are you?");
+            }
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Please add a valid number...");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+    }
+
+    private void DamagePlayer(Command command)
+    {
+        if (!command.HasParameter())
+        {
+            Console.WriteLine("Damage how much?");
+            return;
+        }
+
+        if (int.TryParse(command.Parameter, out int amount))
+        {
+            if (player.Health >= amount)
+            {
+                player.TakeDamage(amount);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"You took {amount} damage! Your health is now: {player.Health}HP");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else
+            {
+                Console.WriteLine("That would kill u.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Please add a valid number...");
+        }
     }
 }
