@@ -1,13 +1,5 @@
-using System;
-
-class Exit
+public record Exit(Room Destination, Action<Player> OnTraverse = null)
 {
-    public Room Destination { get; init; }
-    public Action<Player> OnTraverse { get; init; }
-
-    public Exit(Room destination, Action<Player> onTraverse = null) => 
-        (Destination, OnTraverse) = (destination, onTraverse);
-
     public void Traverse(Player player)
     {
         OnTraverse?.Invoke(player);

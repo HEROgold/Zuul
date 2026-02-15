@@ -1,88 +1,35 @@
-using System.Collections;
-
-class Inventory
+public class Inventory(int maxWeight)
 {
-    //fields
-    private int maxWeight;
-    private Dictionary<string, Item> items;
+    public Dictionary<string, Item> Items { get; } = [];
+    public int MaxWeight => maxWeight;
+    public int TotalWeight() => Items.Values.Sum(item => item.Weight);
+    public int FreeWeight() => maxWeight - TotalWeight();
 
-    //constructor
-    public Inventory(int maxWeight)
+    public bool Put(Item item)
     {
-        this.maxWeight = maxWeight;
-        this.items = new Dictionary<string, Item>();
-    }
-
-    public Dictionary<string, Item> getItems()
-    {
-        return items;
-    }
-
-    //methods
-
-    // allows a item to be placed in a room
-    public bool Put(string _, Item item)
-    {
-        if(item.Weight <= FreeWeight())
+        if (item.Weight > FreeWeight())
         {
-            items.Add(item.Description, item);
-            return true;
+            Console.WriteLine($"Can't carry anymore\nWeight left: {FreeWeight()}, item weight: {item.Weight}");
+            return false;
         }
-        Console.WriteLine($"U can't carry anymore\nWeight left {FreeWeight()} the item weights is {item.Weight}");
-        return false;
+        Items.Add(item.Description, item);
+        return true;
     }
 
-    // Used to help assist add to backpack
-    public Item Get(string itemName)
+    public Item? Get(string itemName)
     {
-        // Temp item creation
-        Item temp = null;
-
-        if(items.ContainsKey(itemName))
-        {
-            // If item exists
-            // Put it in the temp
-            temp = items[itemName];
-
-            // Remove item from inventory
-            items.Remove(itemName);
-        }
-
-        // Return item
-        return temp;
+        if (!Items.TryGetValue(itemName, out var item)) return null;
+        Items.Remove(itemName);
+        return item;
     }
 
-    public Item Peek(string itemName)
+    public Item? Peek(string itemName) => Items.TryGetValue(itemName, out var item) ? item : null;
+
+    public void Display()
     {
-        // Temp item creation
-        Item temp = null;
-
-        if(items.ContainsKey(itemName))
-        {
-            // If item extists
-            // Put it in the temp
-            temp = items[itemName];
-        }
-        return temp;
-    }
-
-    // Adds up all of the weight of the items in the inventory
-    public int TotalWeight()
-    {
-        int total = 0;
-
-        foreach(var (key, item) in items)
-        {
-            total += item.Weight;
-        }
-
-        return total;
-    }
-    
-    // See how much space is left in the Inventory
-    public int FreeWeight()
-    {
-       int  freeWeight = maxWeight - TotalWeight();
-       return freeWeight;
+        Console.WriteLine("=== Backpack ===");
+        foreach (var item in Items.Values)
+            Console.WriteLine($"{item.Description} - {item.Weight}kg");
+        Console.WriteLine($"Weight: {TotalWeight()}/{MaxWeight} ({FreeWeight()} remaining)");
     }
 }

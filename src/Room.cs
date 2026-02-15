@@ -1,28 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-
-class Room
+public class Room(string name, string desc)
 {
-    public string Name { get; }
-    private readonly string description;
-    private readonly Dictionary<Direction, Exit> exits = new();
-    private Inventory chest;
-    private bool isLocked;
-    private bool isNurgleLocked;
+    public string Name { get; } = name;
+    private readonly string description = desc;
+    private readonly Dictionary<Direction, Exit> exits = [];
     public Enemy enemy;
 
-    public Room(string name, string desc)
-    {
-        Name = name;
-        description = desc;
-        chest = new Inventory(10000);
-        isLocked = false;
-        isNurgleLocked = false;
-    }
+    public Inventory Chest { get; } = new(10000);
 
-    public Inventory Chest => chest;
-
-    public void AddExit(Direction direction, Exit exit) => exits[direction] = exit;
+    public void SetExit(Direction direction, Exit exit) => exits[direction] = exit;
 
     public string GetShortDescription() => description;
 
@@ -39,16 +24,23 @@ class Room
     public IEnumerable<(Direction direction, Room destination)> GetExitInfos() =>
         exits.Select(kv => (kv.Key, kv.Value.Destination));
 
-    private string GetExitString() => !exits.Any() ? "Exits: none"
+    private string GetExitString() => exits.Count == 0 ? "Exits: none"
         : $"Exits: {string.Join(", ", exits.Keys.Select(d => d.ToDirectionString()))}";
 
-    public void AddLock() => isLocked = true;
-    public void RemoveLock() => isLocked = false;
-    public bool GetLock() => isLocked;
+    public void AddLock() => IsLocked = true;
+    public void Unlock() => IsLocked = false;
+    public bool IsLocked { get; private set; }
 
-    public void AddNurgleLock() => isNurgleLocked = true;
-    public void RemoveNurgleLock() => isNurgleLocked = false;
-    public bool GetNurgleLock() => isNurgleLocked;
+    public bool IsNurgleLocked { get; private set; }
+    public void AddNurgleLock() => IsNurgleLocked = true;
 
     public void AddEnemy(Enemy enemy) => this.enemy = enemy;
+
+    public string GetDescription(bool includeMap = false, string mapContent = null)
+    {
+        var desc = GetLongDescription();
+        return includeMap && !string.IsNullOrEmpty(mapContent)
+            ? $"{desc}\n\n{mapContent}"
+            : desc;
+    }
 }

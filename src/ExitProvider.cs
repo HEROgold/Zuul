@@ -1,10 +1,8 @@
-using System;
-
 static class ExitProvider
 {
     public static Exit Normal(Room destination) => new(destination);
 
-    public static Exit Hazardous(Room destination, int minDamage, int maxDamage) => 
+    public static Exit Hazardous(Room destination, int minDamage, int maxDamage) =>
         new(destination, player =>
         {
             int damage = Random.Shared.Next(minDamage, maxDamage + 1);
