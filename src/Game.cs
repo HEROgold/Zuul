@@ -78,11 +78,19 @@ class Game
 		Item piston = new Item (50, "piston");
 		Item ducttape = new Item (5, "ducttape");
 		Item hydraulics = new Item (70, "hydraulics");
+		Item meatpack = new Item (0, "meatpack");
+		Item bookofmeat = new Item (0, "bookofmeat");
+
+		Spell fireball = new Spell ("fireball", player.PlayerAttack(45,61));
+		player.PlayerAddSpell(fireball.desc,fireball);
 
 		ItemLib.AddRange(bandage.Description, medkit.Description, key.Description, nurgling.Description, metalrod.Description, piston.Description, ducttape.Description, hydraulics.Description);
 
 		// And add them to the Rooms
 		carrion.Chest.Put("bandage",bandage);
+		carrion.Chest.Put("meatpack", meatpack);
+		carrion.Chest.Put("nurgling", nurgling);
+		carrion.Chest.Put("bookofmeat", bookofmeat);
 		// carrion.Chest.Put("key", key);
 		// carrion.Chest.Put("medkit", medkit);
 		// carrion.Chest.Put("metalrod", metalrod);
@@ -149,6 +157,11 @@ class Game
 			player.health = 0;
 		}
 	}
+
+	public Player GetPlayer()
+    {
+        return player;
+    }
 
 	// Print out the opening message for the player.
 	private void PrintWelcome()
@@ -233,9 +246,12 @@ class Game
 			case "damage":
 				player.damageNum(command.SecondWord);
 				break;
+			case "cast":
+				player.Spells(command);
+				break;
 
 			case "attack":
-				PlayerAttack();
+				Fight();
 				break;
 		}
 
@@ -272,6 +288,13 @@ class Game
 				Console.WriteLine(item.Weight);
 				Console.WriteLine($"Type take {item.Description} to grab the item.\n");
 			}
+		}
+
+		if (player.CurrentRoom.enemy != null)
+		{
+			Console.BackgroundColor = ConsoleColor.Red;
+			Console.WriteLine($"There is a {player.CurrentRoom.enemy.GetEnemyDesc()} here.\n");
+			Console.BackgroundColor = ConsoleColor.White;
 		}
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
@@ -356,42 +379,47 @@ class Game
 		if (player.CurrentRoom.enemy != null)
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine("There is a enemy in this room use attack to kill it.");
+			Console.WriteLine($"There is a {player.CurrentRoom.enemy.GetEnemyDesc()} in this room. Use attack or cast to kill it.\n");
 			Console.ForegroundColor = ConsoleColor.White;
 			return;
 		}
 
 		player.CurrentRoom = nextRoom;
-		player.Damage();
+
+		if (nextRoom.enemy != null)
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine($"There is a {player.CurrentRoom.enemy.GetEnemyDesc()} in this room. Use attack or cast to kill it.\n");
+			Console.ForegroundColor = ConsoleColor.White;
+		}
+
+		player.Damage(5);
 		player.LowHp();
 		Devoured();
 		Console.WriteLine(player.CurrentRoom.GetLongDescription());
 	}
-	public void PlayerAttack()
+	private void Fight()
 	{	
+		if (player.tel > 0)
+		{
+			player.tel -= 1;
+		}
+
 		if (player.CurrentRoom.enemy == null)
 		{
 			Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine("There is nothing here to attack.\n"); Console.ForegroundColor = ConsoleColor.White;
 			return;
 		}
-		int playerAttack = 0;
-		int dodgenrplayer = rndnum.Next(1,11);
-		if (dodgenrplayer == 1)
-		{
-			player.CurrentRoom.enemy.DamageEnemy(playerAttack);
-		}
-		else
-		{
-			playerAttack = rndnum.Next(15,26);
-			player.CurrentRoom.enemy.DamageEnemy(playerAttack);
-		}
 
-		player.EnemyAttack(); 
+		int playerAttack;
+
+		playerAttack = player.PlayerAttack(20,25);
+		player.enemyAttack = player.EnemyAttack(15, 25);
 		
 		Console.ForegroundColor = ConsoleColor.Red; Console.WriteLine($"You got hit for {player.enemyAttack} damage. You got {player.health}HP left\n"); Console.ForegroundColor = ConsoleColor.Green;
-		if (player.CurrentRoom.enemy.CurrentHealthEnemy > 0)
+		if (player.CurrentRoom.enemy.GetEnemyCurrentHealth() > 0)
 		{
-			Console.WriteLine($"You hit the enemy for {playerAttack} damage. It still has {player.CurrentRoom.enemy.CurrentHealthEnemy}HP remaining\n");
+			Console.WriteLine($"You hit the enemy for {playerAttack} damage. It still has {player.CurrentRoom.enemy.GetEnemyCurrentHealth()}HP remaining\n");
 			Console.ForegroundColor = ConsoleColor.White;
 		}
 		else
@@ -399,7 +427,14 @@ class Game
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.WriteLine("You slayed the thing.");
 			Console.ForegroundColor = ConsoleColor.White;
+			Console.WriteLine(player.CurrentRoom.GetLongDescription());
 		}
+
+		if (!player.isAlive())
+		{
+			Console.WriteLine($"You died in combat due to {player.CurrentRoom.enemy.GetEnemyDesc()}");
+		}
+
 		if (!player.CurrentRoom.enemy.EnemyIsAlive())
 		{
 			player.CurrentRoom.enemy = null;
