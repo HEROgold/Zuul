@@ -28,8 +28,14 @@ class Inventory
             items.Add(item.Description, item);
             return true;
         }
-        Console.WriteLine($"U can't carry anymore\nWeight left {FreeWeight()} the item weights is {item.Weight}");
+        Console.WriteLine($"You can't carry anymore\nWeight left {FreeWeight()} the item weights is {item.Weight}");
         return false;
+    }
+
+    public int GetMaxWeight(int weight)
+    {
+        maxWeight = maxWeight += weight;
+        return this.maxWeight;
     }
 
     // Used to help assist add to backpack
