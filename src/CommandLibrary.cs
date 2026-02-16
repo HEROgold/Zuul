@@ -25,6 +25,7 @@ class CommandLibrary
 		validCommands.Add("damage");
 		validCommands.Add("checkall");
 		validCommands.Add("attack");
+		validCommands.Add("cast");
 	}
 
 	// Check whether a given string is a valid command word.
