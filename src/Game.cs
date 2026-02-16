@@ -17,6 +17,7 @@ class Game
         bool finished = false;
         while (!finished)
         {
+            player.TeleportCounter = 0; // Reset spell casting limit each turn
             Command command = parser.GetCommand(player);
             if (command.IsUnknown()) continue;
 

@@ -4,7 +4,7 @@ public class ItemMenuSystem(IEnumerable<Item> availableItems) : BaseMenuSystem<I
 
     protected override string GetTitle() => customTitle;
 
-    protected override string FormatOption(Item? item) => 
+    protected override string FormatOption(Item? item) =>
         item.HasValue ? $"{item.Value.Description} ({item.Value.Weight}kg)" : "None";
 
     protected override Item? GetCancelValue() => null;

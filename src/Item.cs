@@ -21,6 +21,8 @@ public readonly struct Item
         _ when this == ItemProvider.Medkit => UseHealingItem(player, 50, "medkit"),
         _ when this == ItemProvider.Key => UseKey(player, direction),
         _ when this == ItemProvider.Hydraulics => UseHydraulics(player, direction),
+        _ when this == ItemProvider.Meatpack => UseMeatpack(player),
+        _ when this == ItemProvider.BookOfMeat => UseBookOfMeat(player),
         _ => UseFallback(player)
     };
 
@@ -100,6 +102,26 @@ public readonly struct Item
         targetRoom.Unlock();
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("You use the hydraulics to force open the heavy door!");
+        Console.ForegroundColor = ConsoleColor.White;
+        return true;
+    }
+
+    private bool UseMeatpack(Player player)
+    {
+        player.Backpack.IncreaseMaxWeight(50);
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("You consume the meatpack! Your carrying capacity increases by 50kg!");
+        Console.ForegroundColor = ConsoleColor.White;
+        return true;
+    }
+
+    private bool UseBookOfMeat(Player player)
+    {
+        player.LearnSpell("smite", SpellProvider.Smite);
+        player.LearnSpell("fireball", SpellProvider.Fireball);
+        player.LearnSpell("lightning", SpellProvider.LightningBolt);
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("You study the Book of Meat and learn powerful spells!");
         Console.ForegroundColor = ConsoleColor.White;
         return true;
     }

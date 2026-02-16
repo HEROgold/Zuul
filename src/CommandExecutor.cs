@@ -17,6 +17,8 @@ public class CommandExecutor(Player player, CraftingSystem crafting, Parser pars
         CommandType.Heal => ExecuteAndContinue(() => HealPlayer(command)),
         CommandType.Damage => ExecuteAndContinue(() => DamagePlayer(command)),
         CommandType.Die => ExecuteAndContinue(player.Kill),
+        CommandType.Cast => ExecuteAndContinue(() => CastSpell(command)),
+        CommandType.Spells => ExecuteAndContinue(player.ShowSpells),
         CommandType.Unknown => false,
         _ => ExecuteAndContinue(() => Console.WriteLine("Command not recognized."))
     };
@@ -147,6 +149,17 @@ public class CommandExecutor(Player player, CraftingSystem crafting, Parser pars
 
     private void DamagePlayer(Command command) =>
         ExecuteWithNumber(command, player.DamageAmount, "No amount specified.");
+
+    private void CastSpell(Command command)
+    {
+        if (command.Parameter is not SpellParameter spellParam)
+        {
+            Console.WriteLine("No spell selected.");
+            return;
+        }
+
+        player.CastSpell(spellParam.Spell);
+    }
 
     private static void ExecuteWithNumber(Command command, Action<int> action, string errorMessage)
     {
