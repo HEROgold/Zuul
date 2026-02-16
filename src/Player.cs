@@ -5,6 +5,8 @@ public class Player(int initialHealth = 100)
     public Room CurrentRoom { get; set; }
     public PlayerStats Stats { get; private set; } = new(initialHealth);
     public Inventory Backpack { get; } = new(100);
+    public Dictionary<string, Spell> SpellsLib { get; } = [];
+    public int TeleportCounter { get; set; } = 0;
 
     public void TakeDamage(int damage) => Stats = Stats.TakeDamage(damage);
     public void Heal(int amount) => Stats = Stats.Heal(amount);
@@ -113,5 +115,68 @@ public class Player(int initialHealth = 100)
         }
 
         return item.Use(this, direction);
+    }
+
+    public void ShowSpells()
+    {
+        if (SpellsLib.Count == 0)
+        {
+            Console.WriteLine("You don't know any spells yet. Find a spell book to learn some!");
+            return;
+        }
+
+        Console.WriteLine("\n=== Known Spells ===");
+        foreach (var spell in SpellsLib.Values)
+        {
+            Console.WriteLine($"- {spell.desc} (Damage: {spell.spellDamage})");
+        }
+        Console.WriteLine();
+    }
+
+    public bool CastSpell(Spell spell)
+    {
+        if (TeleportCounter > 0)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("You cannot cast another spell this turn!");
+            Console.ForegroundColor = ConsoleColor.White;
+            return false;
+        }
+
+        var enemy = CurrentRoom.enemy;
+        if (enemy == null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("There is no enemy here to cast spells at!");
+            Console.ForegroundColor = ConsoleColor.White;
+            return false;
+        }
+
+        enemy.TakeDamage(spell.spellDamage);
+        TeleportCounter++;
+
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine($"You cast {spell.desc}!");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(enemy.IsAlive
+            ? $"The spell deals {spell.spellDamage} damage! The enemy has {enemy.CurrentHealth}HP remaining."
+            : "The enemy has been vanquished by your magic!");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        return true;
+    }
+
+    public void LearnSpell(string name, Spell spell)
+    {
+        if (SpellsLib.ContainsKey(name))
+        {
+            Console.WriteLine($"You already know {spell.desc}!");
+            return;
+        }
+
+        SpellsLib[name] = spell;
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"You learned a new spell: {spell.desc}!");
+        Console.ForegroundColor = ConsoleColor.White;
     }
 }

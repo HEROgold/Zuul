@@ -1,9 +1,14 @@
 public class Inventory(int maxWeight)
 {
     public Dictionary<string, Item> Items { get; } = [];
-    public int MaxWeight => maxWeight;
+    public int MaxWeight { get; private set; } = maxWeight;
     public int TotalWeight() => Items.Values.Sum(item => item.Weight);
-    public int FreeWeight() => maxWeight - TotalWeight();
+    public int FreeWeight() => MaxWeight - TotalWeight();
+
+    public void IncreaseMaxWeight(int amount)
+    {
+        MaxWeight += amount;
+    }
 
     public bool Put(Item item)
     {

@@ -36,6 +36,7 @@ public class Parser
         CommandType.Take => GetItemParameterFromChest(player.CurrentRoom),
         CommandType.Place or CommandType.Drop or CommandType.Use => GetItemParameterFromBackpack(player),
         CommandType.Heal or CommandType.Damage => GetNumberParameter(),
+        CommandType.Cast => GetSpellParameter(player),
         _ => null
     };
 
@@ -91,6 +92,28 @@ public class Parser
 
         Console.WriteLine("Invalid number.");
         return null;
+    }
+
+    private static SpellParameter? GetSpellParameter(Player player)
+    {
+        if (player?.SpellsLib == null || player.SpellsLib.Count == 0)
+        {
+            Console.WriteLine("You don't know any spells yet!");
+            Console.ReadKey(true);
+            Console.Clear();
+            return null;
+        }
+
+        var spellMenu = new SpellMenuSystem(player.SpellsLib.Values);
+        var spell = spellMenu.GetSelection();
+
+        if (!spell.HasValue)
+        {
+            Console.WriteLine("Spell selection cancelled.");
+            return null;
+        }
+
+        return new SpellParameter(spell.Value);
     }
 
     private static Item? GetItemFromChest(Room currentRoom)

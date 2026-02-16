@@ -1,6 +1,6 @@
 public enum CommandType
 {
-    Unknown, Help, Go, Quit, Look, Health, Take, Place, Drop, Backpack, Use, Craft, Attack, Heal, Damage, Die
+    Unknown, Help, Go, Quit, Look, Health, Take, Place, Drop, Backpack, Use, Craft, Attack, Heal, Damage, Die, Cast, Spells
 }
 
 public static class CommandTypeExtensions
@@ -26,7 +26,9 @@ public static class CommandTypeExtensions
         [CommandType.Attack] = "Attack an enemy",
         [CommandType.Heal] = "Heal yourself",
         [CommandType.Damage] = "Take damage (debug)",
-        [CommandType.Die] = "Kill yourself (debug)"
+        [CommandType.Die] = "Kill yourself (debug)",
+        [CommandType.Cast] = "Cast a spell",
+        [CommandType.Spells] = "View known spells"
     };
 
     public static CommandType FromString(string command) =>
@@ -44,7 +46,7 @@ public static class CommandTypeExtensions
     {
         CommandType.Go or CommandType.Take or CommandType.Place or CommandType.Drop or
         CommandType.Use or CommandType.Craft or CommandType.Heal or
-        CommandType.Damage => true,
+        CommandType.Damage or CommandType.Cast => true,
         _ => false
     };
 
